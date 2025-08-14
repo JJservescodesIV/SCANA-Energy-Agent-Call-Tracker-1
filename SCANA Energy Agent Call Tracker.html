@@ -1,0 +1,3044 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCANA Energy Agent Call Tracker</title>
+    <style>
+        :root {
+            --primary: #00529b;
+            --primary-light: #2371b8;
+            --secondary: #f26c22;
+            --secondary-light: #f58a4e;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --body-bg: #f4f6f9;
+            --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--body-bg);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo {
+            height: 40px;
+            margin-right: 10px;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-name {
+            margin-right: 10px;
+            font-weight: 500;
+        }
+        
+        .container {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+        
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            padding: 1rem;
+            border-right: 1px solid var(--gray-light);
+            overflow-y: auto;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .sidebar-menu-item {
+            margin-bottom: 0.5rem;
+        }
+        
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 0.25rem;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .sidebar-menu-link:hover {
+            background-color: var(--gray-light);
+        }
+        
+        .sidebar-menu-link.active {
+            background-color: var(--primary-light);
+            color: white;
+        }
+        
+        .sidebar-menu-icon {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .page-title {
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--gray-light);
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 1rem 1.5rem;
+            background-color: white;
+            border-bottom: 1px solid var(--gray-light);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: var(--card-shadow);
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
+        }
+        
+        .stat-icon.primary {
+            background-color: rgba(0, 82, 155, 0.1);
+            color: var(--primary);
+        }
+        
+        .stat-icon.secondary {
+            background-color: rgba(242, 108, 34, 0.1);
+            color: var(--secondary);
+        }
+        
+        .stat-icon.success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+        
+        .stat-icon.warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+        
+        .stat-icon.info {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+        
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-light);
+            border-radius: 0.25rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(0, 82, 155, 0.25);
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            font-weight: 500;
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--secondary-light);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tag-primary {
+            background-color: rgba(0, 82, 155, 0.1);
+            color: var(--primary);
+        }
+        
+        .tag-secondary {
+            background-color: rgba(242, 108, 34, 0.1);
+            color: var(--secondary);
+        }
+        
+        .tag-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+        
+        .tag-danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .tag-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+        
+        .tag-info {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: var(--info);
+        }
+        
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        
+        th {
+            font-weight: 600;
+            background-color: var(--light);
+        }
+        
+        tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid var(--gray-light);
+            border-radius: 0.25rem;
+            font-size: 1rem;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .filter-label {
+            margin-right: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid var(--gray-light);
+            border-radius: 0.25rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 0.25rem;
+        }
+        
+        .badge-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .badge-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .badge-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .badge-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: var(--warning);
+            color: #212529;
+        }
+        
+        .badge-info {
+            background-color: var(--info);
+            color: white;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .priority-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .priority-high {
+            background-color: var(--danger);
+        }
+        
+        .priority-medium {
+            background-color: var(--warning);
+        }
+        
+        .priority-low {
+            background-color: var(--success);
+        }
+        
+        .call-card {
+            border-left: 4px solid var(--gray-light);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: white;
+            border-radius: 0.25rem;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.2s;
+        }
+        
+        .call-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+        }
+        
+        .call-card.priority-high {
+            border-left-color: var(--danger);
+        }
+        
+        .call-card.priority-medium {
+            border-left-color: var(--warning);
+        }
+        
+        .call-card.priority-low {
+            border-left-color: var(--success);
+        }
+        
+        .call-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .call-card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .call-card-customer {
+            color: var(--gray);
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .call-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        .call-card-tags {
+            margin-top: 0.5rem;
+        }
+        
+        .call-card-date {
+            color: var(--gray);
+        }
+        
+        .call-notes {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .reference-link {
+            display: inline-block;
+            margin-top: 0.5rem;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .reference-link:hover {
+            text-decoration: underline;
+        }
+        
+        .tab-container {
+            margin-bottom: 1.5rem;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--gray-light);
+            margin-bottom: 1rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .tab:hover {
+            background-color: var(--light);
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .custom-checkbox {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+        
+        .custom-checkbox input {
+            margin-right: 0.5rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .quick-resources {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .quick-resource {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border: 1px solid var(--gray-light);
+            border-radius: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .quick-resource:hover {
+            background-color: var(--light);
+            transform: translateY(-2px);
+        }
+        
+        .quick-resource-icon {
+            margin-right: 0.5rem;
+            color: var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--gray-light);
+                padding: 0.5rem;
+            }
+            
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .sidebar-menu-item {
+                margin-bottom: 0;
+            }
+            
+            .sidebar-menu-link {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+            
+            .sidebar-menu-icon {
+                margin-right: 0.25rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <div class="logo">
+                <!-- SCANA Energy Logo (using placeholder) -->
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="8" fill="#F26C22"></rect>
+                    <path d="M10 20C10 14.4772 14.4772 10 20 10C25.5228 10 30 14.4772 30 20C30 25.5228 25.5228 30 20 30C14.4772 30 10 25.5228 10 20Z" fill="white"></path>
+                    <path d="M17 16C17 15.4477 17.4477 15 18 15H22C22.5523 15 23 15.4477 23 16V18C23 18.5523 22.5523 19 22 19H18C17.4477 19 17 18.5523 17 18V16Z" fill="#F26C22"></path>
+                    <path d="M17 22C17 21.4477 17.4477 21 18 21H22C22.5523 21 23 21.4477 23 22V24C23 24.5523 22.5523 25 22 25H18C17.4477 25 17 24.5523 17 24V22Z" fill="#F26C22"></path>
+                </svg>
+            </div>
+            <h1>SCANA Energy Agent Call Tracker</h1>
+        </div>
+        <div class="user-info">
+            <span class="user-name">Agent Name</span>
+            <button class="btn btn-sm btn-secondary" id="logout-btn">Logout</button>
+        </div>
+    </header>
+    
+    <div class="container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="#" class="sidebar-menu-link active" data-page="dashboard">
+                        <span class="sidebar-menu-icon">📊</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="#" class="sidebar-menu-link" data-page="log-call">
+                        <span class="sidebar-menu-icon">📝</span>
+                        Log Call
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="#" class="sidebar-menu-link" data-page="saved-calls">
+                        <span class="sidebar-menu-icon">📞</span>
+                        Saved Calls
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="#" class="sidebar-menu-link" data-page="call-categories">
+                        <span class="sidebar-menu-icon">🏷️</span>
+                        Call Categories
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="#" class="sidebar-menu-link" data-page="resources">
+                        <span class="sidebar-menu-icon">📚</span>
+                        Resources
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="#" class="sidebar-menu-link" data-page="settings">
+                        <span class="sidebar-menu-icon">⚙️</span>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+        </aside>
+        
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div class="page active" id="dashboard">
+                <h2 class="page-title">Dashboard</h2>
+                
+                <div class="quick-resources">
+                    <a href="#" class="quick-resource">
+                        <span class="quick-resource-icon">📄</span>
+                        Current Rates
+                    </a>
+                    <a href="#" class="quick-resource">
+                        <span class="quick-resource-icon">🔄</span>
+                        Reconnect Process
+                    </a>
+                    <a href="#" class="quick-resource">
+                        <span class="quick-resource-icon">💼</span>
+                        Billing FAQ
+                    </a>
+                    <a href="#" class="quick-resource">
+                        <span class="quick-resource-icon">🔍</span>
+                        Account Lookup
+                    </a>
+                    <a href="#" class="quick-resource">
+                        <span class="quick-resource-icon">💬</span>
+                        Call Scripts
+                    </a>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">📞</div>
+                        <div class="stat-value" id="total-calls-today">0</div>
+                        <div class="stat-label">Today's Calls</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon secondary">🔄</div>
+                        <div class="stat-value" id="reconnect-calls">0</div>
+                        <div class="stat-label">Reconnect Calls</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">📋</div>
+                        <div class="stat-value" id="rate-renewal-calls">0</div>
+                        <div class="stat-label">Rate Renewals</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">🔖</div>
+                        <div class="stat-value" id="saved-calls-count">0</div>
+                        <div class="stat-label">Saved for Review</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span>Call Category Distribution</span>
+                        <div class="filter-group">
+                            <span class="filter-label">Period:</span>
+                            <select class="filter-select" id="category-chart-period">
+                                <option value="today">Today</option>
+                                <option value="week" selected="">This Week</option>
+                                <option value="month">This Month</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="category-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Recent Call Activity</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Customer</th>
+                                        <th>Category</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-calls">
+                                    <!-- Recent calls will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Follow-up Reminders</div>
+                    <div class="card-body">
+                        <div id="reminders-container">
+                            <!-- Reminders will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Log Call Page -->
+            <div class="page" id="log-call">
+                <h2 class="page-title">Log New Call</h2>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <form id="call-log-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="customer-name">Customer Name</label>
+                                    <input type="text" class="form-control" id="customer-name" required="">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="account-number">Account Number</label>
+                                    <input type="text" class="form-control" id="account-number">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="contact-number">Contact Number</label>
+                                    <input type="tel" class="form-control" id="contact-number">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="call-date">Date &amp; Time</label>
+                                    <input type="datetime-local" class="form-control" id="call-date" required="">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Primary Call Category</label>
+                                <select class="form-control" id="call-category" required="">
+                                    <option value="" disabled="" selected="">Select category</option>
+                                    <optgroup label="Account Management">
+                                        <option value="New Service">New Service</option>
+                                        <option value="Service Transfer">Service Transfer</option>
+                                        <option value="Disconnect Service">Disconnect Service</option>
+                                        <option value="Reconnect Service">Reconnect Service</option>
+                                        <option value="Account Update">Account Update</option>
+                                    </optgroup>
+                                    <optgroup label="Billing">
+                                        <option value="Billing Question">Billing Question</option>
+                                        <option value="Payment Arrangement">Payment Arrangement</option>
+                                        <option value="Rate Renewal">Rate Renewal</option>
+                                        <option value="Rate Question">Rate Question</option>
+                                        <option value="Budget Billing">Budget Billing</option>
+                                    </optgroup>
+                                    <optgroup label="Technical">
+                                        <option value="Gas Leak">Gas Leak</option>
+                                        <option value="Service Issue">Service Issue</option>
+                                        <option value="Meter Reading">Meter Reading</option>
+                                        <option value="Pilot Light">Pilot Light</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                        <option value="Complaint">Complaint</option>
+                                        <option value="Program Inquiry">Program Inquiry</option>
+                                        <option value="Other">Other</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Additional Tags (Optional)</label>
+                                <div class="tag-selections">
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="call-tags" value="Escalated">
+                                        Escalated
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="call-tags" value="Needs Follow-up">
+                                        Needs Follow-up
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="call-tags" value="Senior Customer">
+                                        Senior Customer
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="call-tags" value="First-time Caller">
+                                        First-time Caller
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="call-tags" value="Low Income">
+                                        Low Income Assistance
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="call-tags" value="Online Account">
+                                        Online Account Setup
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="call-description">Call Description</label>
+                                <textarea class="form-control" id="call-description" rows="4" required=""></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="resolution">Resolution/Action Taken</label>
+                                <textarea class="form-control" id="resolution" rows="3"></textarea>
+                            </div>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="reference-url">Reference URL/Link</label>
+                                    <input type="url" class="form-control" id="reference-url" placeholder="Add related URL or reference">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="call-priority">Priority</label>
+                                    <select class="form-control" id="call-priority">
+                                        <option value="low">Low</option>
+                                        <option value="medium" selected="">Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="follow-up-date">Follow-up Date (if needed)</label>
+                                    <input type="date" class="form-control" id="follow-up-date">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" id="save-for-review">
+                                    Save this call for later review
+                                </label>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Log Call</button>
+                                <button type="reset" class="btn btn-secondary">Clear Form</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Current SCANA Energy Rates</div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Plan Type</th>
+                                        <th>Rate (per therm)</th>
+                                        <th>Term</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Fixed Rate</td>
+                                        <td>$0.599</td>
+                                        <td>12 months</td>
+                                        <td>No enrollment fee, $150 early termination fee</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fixed Rate</td>
+                                        <td>$0.649</td>
+                                        <td>6 months</td>
+                                        <td>No enrollment fee, $75 early termination fee</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Variable Rate</td>
+                                        <td>$0.729</td>
+                                        <td>Monthly</td>
+                                        <td>No enrollment fee, no termination fee</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Senior Plan</td>
+                                        <td>$0.579</td>
+                                        <td>12 months</td>
+                                        <td>For customers 65+, ID verification required</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Saved Calls Page -->
+            <div class="page" id="saved-calls">
+                <h2 class="page-title">Saved Calls</h2>
+                
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-saved-calls" placeholder="Search saved calls by customer name, account, or notes...">
+                </div>
+                
+                <div class="filters">
+                    <div class="filter-group">
+                        <span class="filter-label">Category:</span>
+                        <select class="filter-select" id="saved-category-filter">
+                            <option value="all">All Categories</option>
+                            <option value="Reconnect Service">Reconnect Service</option>
+                            <option value="Rate Renewal">Rate Renewal</option>
+                            <option value="Billing Question">Billing Question</option>
+                            <option value="Payment Arrangement">Payment Arrangement</option>
+                            <option value="New Service">New Service</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <span class="filter-label">Priority:</span>
+                        <select class="filter-select" id="saved-priority-filter">
+                            <option value="all">All Priorities</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <span class="filter-label">Date:</span>
+                        <select class="filter-select" id="saved-date-filter">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                    
+                    <button class="btn btn-sm btn-primary" id="apply-saved-filters">Apply Filters</button>
+                </div>
+                
+                <div class="tab-container">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="all-saved">All Saved</div>
+                        <div class="tab" data-tab="for-review">For Review</div>
+                        <div class="tab" data-tab="follow-up">Need Follow-up</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="all-saved">
+                        <div id="all-saved-calls">
+                            <!-- Saved calls will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="for-review">
+                        <div id="review-calls">
+                            <!-- Calls for review will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="follow-up">
+                        <div id="follow-up-calls">
+                            <!-- Calls needing follow-up will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Call Categories Page -->
+            <div class="page" id="call-categories">
+                <h2 class="page-title">Call Categories</h2>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <span>Call Volume by Category</span>
+                        <div class="filter-group">
+                            <span class="filter-label">Time Range:</span>
+                            <select class="filter-select" id="volume-time-range">
+                                <option value="today">Today</option>
+                                <option value="week" selected="">This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="quarter">Last 3 Months</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="volume-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon primary">🔄</div>
+                        <div class="stat-value" id="reconnect-total">0</div>
+                        <div class="stat-label">Reconnect/Disconnect</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon secondary">📋</div>
+                        <div class="stat-value" id="rate-renewal-total">0</div>
+                        <div class="stat-label">Rate Renewals</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon success">💰</div>
+                        <div class="stat-value" id="billing-total">0</div>
+                        <div class="stat-label">Billing Questions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon warning">📊</div>
+                        <div class="stat-value" id="new-service-total">0</div>
+                        <div class="stat-label">New Service</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Custom Categories</div>
+                    <div class="card-body">
+                        <p>Add your own custom categories to better organize your calls.</p>
+                        <form id="add-category-form" class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" for="new-category">New Category Name</label>
+                                <input type="text" class="form-control" id="new-category" placeholder="Enter category name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="category-group">Category Group</label>
+                                <select class="form-control" id="category-group">
+                                    <option value="Account Management">Account Management</option>
+                                    <option value="Billing">Billing</option>
+                                    <option value="Technical">Technical</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Add Category</button>
+                            </div>
+                        </form>
+                        
+                        <div class="table-responsive" style="margin-top: 1.5rem;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Category Name</th>
+                                        <th>Group</th>
+                                        <th>Call Count</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categories-table">
+                                    <!-- Categories will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Resources Page -->
+            <div class="page" id="resources">
+                <h2 class="page-title">SCANA Energy Resources</h2>
+                
+                <div class="tab-container">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="rates-info">Rates &amp; Plans</div>
+                        <div class="tab" data-tab="service-info">Service Info</div>
+                        <div class="tab" data-tab="billing-info">Billing &amp; Payment</div>
+                        <div class="tab" data-tab="scripts">Call Scripts</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="rates-info">
+                        <div class="card">
+                            <div class="card-header">Current SCANA Energy Rate Plans</div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Plan Name</th>
+                                                <th>Rate (per therm)</th>
+                                                <th>Term</th>
+                                                <th>Details</th>
+                                                <th>Best For</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Fixed Rate Basic</td>
+                                                <td>$0.599</td>
+                                                <td>12 months</td>
+                                                <td>No enrollment fee, $150 early termination fee</td>
+                                                <td>Most customers, price stability</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Fixed Rate Flex</td>
+                                                <td>$0.649</td>
+                                                <td>6 months</td>
+                                                <td>No enrollment fee, $75 early termination fee</td>
+                                                <td>Short-term residents, flexibility</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Variable Rate</td>
+                                                <td>$0.729</td>
+                                                <td>Monthly</td>
+                                                <td>No enrollment fee, no termination fee</td>
+                                                <td>Market rate shoppers, no commitment</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Senior Advantage</td>
+                                                <td>$0.579</td>
+                                                <td>12 months</td>
+                                                <td>For customers 65+, ID verification required</td>
+                                                <td>Senior citizens on fixed income</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Budget Billing</td>
+                                                <td>Varies</td>
+                                                <td>12 months</td>
+                                                <td>Spreads costs evenly over 12 months</td>
+                                                <td>Customers wanting predictable bills</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Low Income Assistance</td>
+                                                <td>$0.559</td>
+                                                <td>12 months</td>
+                                                <td>Income verification required</td>
+                                                <td>Income-qualified customers</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <h4 style="margin-top: 1.5rem;">Rate Renewal Process</h4>
+                                <ol>
+                                    <li>Check current rate and plan expiration date</li>
+                                    <li>Review current usage patterns (high/low user)</li>
+                                    <li>Present applicable plan options</li>
+                                    <li>Process renewal - confirm term, rate, and billing preferences</li>
+                                    <li>Send confirmation email/letter</li>
+                                </ol>
+                                
+                                <div style="margin-top: 1rem;">
+                                    <button class="btn btn-primary" id="rate-calculator-btn">Open Rate Calculator</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="service-info">
+                        <div class="card">
+                            <div class="card-header">Service Connection Information</div>
+                            <div class="card-body">
+                                <h4>New Service Process</h4>
+                                <ol>
+                                    <li>Verify service availability at address</li>
+                                    <li>Collect customer information (ID, SSN, previous address)</li>
+                                    <li>Process credit check ($25 fee, waived for existing customers with good history)</li>
+                                    <li>Select rate plan</li>
+                                    <li>Schedule service activation (1-3 business days)</li>
+                                    <li>Collect applicable fees (connection fee: $50, deposit if required)</li>
+                                </ol>
+                                
+                                <h4 style="margin-top: 1.5rem;">Disconnect/Reconnect Process</h4>
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Service Type</th>
+                                                <th>Timeframe</th>
+                                                <th>Fee</th>
+                                                <th>Requirements</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Standard Disconnect</td>
+                                                <td>1-2 business days</td>
+                                                <td>No charge</td>
+                                                <td>Account must be current</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Same-day Disconnect</td>
+                                                <td>Same day (request by 12pm)</td>
+                                                <td>$35</td>
+                                                <td>Based on availability</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Standard Reconnect</td>
+                                                <td>1-2 business days</td>
+                                                <td>$50</td>
+                                                <td>All outstanding balances paid</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Same-day Reconnect</td>
+                                                <td>Same day (request by 2pm)</td>
+                                                <td>$85</td>
+                                                <td>All outstanding balances paid</td>
+                                            </tr>
+                                            <tr>
+                                                <td>After-hours Reconnect</td>
+                                                <td>After 7pm or weekends</td>
+                                                <td>$125</td>
+                                                <td>Based on availability, emergency only</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <h4 style="margin-top: 1.5rem;">Emergency Services</h4>
+                                <div class="alert" style="background-color: #f8d7da; color: #721c24; padding: 1rem; border-radius: 0.25rem; margin-top: 0.5rem;">
+                                    <strong>For gas leaks or emergencies:</strong> Instruct customer to leave the area immediately and call the 24/7 Emergency Line: <strong>1-877-427-4321</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="billing-info">
+                        <div class="card">
+                            <div class="card-header">Billing &amp; Payment Information</div>
+                            <div class="card-body">
+                                <h4>Payment Options</h4>
+                                <div class="table-responsive">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Payment Method</th>
+                                                <th>Processing Time</th>
+                                                <th>Fee</th>
+                                                <th>Instructions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Online Payment</td>
+                                                <td>1-2 business days</td>
+                                                <td>Free</td>
+                                                <td>Pay through scanaenergy.com account</td>
+                                            </tr>
+                                            <tr>
+                                                <td>AutoPay</td>
+                                                <td>Automatic on due date</td>
+                                                <td>Free</td>
+                                                <td>Set up through online account or agent</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Phone Payment</td>
+                                                <td>Immediate</td>
+                                                <td>$4.95</td>
+                                                <td>Available 24/7 through automated system</td>
+                                            </tr>
+                                            <tr>
+                                                <td>In-person (Authorized Retailer)</td>
+                                                <td>1-2 business days</td>
+                                                <td>$1.50</td>
+                                                <td>Kroger, Walmart, other partner locations</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Mail</td>
+                                                <td>5-7 business days</td>
+                                                <td>Free</td>
+                                                <td>Send to: SCANA Energy, P.O. Box 100157, Columbia, SC 29202</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <h4 style="margin-top: 1.5rem;">Payment Arrangements</h4>
+                                <ul>
+                                    <li><strong>Standard Plan</strong>: Split balance over 2-3 payments</li>
+                                    <li><strong>Extended Plan</strong>: For balances over $300, can extend up to 6 months</li>
+                                    <li><strong>Winter Protection Plan</strong>: Available Nov-Mar for qualified customers</li>
+                                    <li><strong>Deposit Installments</strong>: Spread security deposit over 3 payments</li>
+                                </ul>
+                                
+                                <h4 style="margin-top: 1.5rem;">Bill Explanation</h4>
+                                <div class="bill-explanation" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                                    <div style="flex: 1; min-width: 250px;">
+                                        <h5>Gas Supply Charges</h5>
+                                        <ul>
+                                            <li>Base Gas Rate: Price per therm of gas used</li>
+                                            <li>Market Adjustment: Reflects market changes (variable plans only)</li>
+                                            <li>Consumption: Measured in therms</li>
+                                        </ul>
+                                    </div>
+                                    <div style="flex: 1; min-width: 250px;">
+                                        <h5>Delivery Charges</h5>
+                                        <ul>
+                                            <li>Customer Service Charge: Fixed monthly fee</li>
+                                            <li>Distribution Charge: Cost to deliver gas</li>
+                                            <li>Pipeline Capacity Charge: Cost of pipeline usage</li>
+                                        </ul>
+                                    </div>
+                                    <div style="flex: 1; min-width: 250px;">
+                                        <h5>Other Charges</h5>
+                                        <ul>
+                                            <li>Regulatory Fees: Required by state regulations</li>
+                                            <li>Taxes: State and local taxes</li>
+                                            <li>Past Due Amounts: Previous unpaid balance</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="scripts">
+                        <div class="card">
+                            <div class="card-header">Common Call Scripts</div>
+                            <div class="card-body">
+                                <h4>General Call Opening</h4>
+                                <div class="script-text" style="background-color: #f8f9fa; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem;">
+                                    "Thank you for calling SCANA Energy. My name is [Your Name]. May I have your name and account number or service address, please? Thank you, [Customer Name]. How can I assist you today?"
+                                </div>
+                                
+                                <h4>Rate Renewal Call</h4>
+                                <div class="script-text" style="background-color: #f8f9fa; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem;">
+                                    "I see that your current rate plan is set to expire on [Date]. I'd be happy to go over your renewal options today. Based on your usage history, I can recommend a few plans that would work well for your household. Our most popular option is [Plan Details]. Would you like me to tell you more about this plan or would you prefer to hear about other options we have available?"
+                                </div>
+                                
+                                <h4>Reconnection Process</h4>
+                                <div class="script-text" style="background-color: #f8f9fa; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem;">
+                                    "I understand you need to reconnect your natural gas service. I can definitely help with that. First, I'll need to verify your identity and check if there's an outstanding balance on the account. [After verification] To process a reconnection, there's a standard reconnection fee of $50, and service can be restored within 1-2 business days. If you need same-day service, we offer that for $85 if requested before 2pm. Which option would work better for you?"
+                                </div>
+                                
+                                <h4>Billing Question</h4>
+                                <div class="script-text" style="background-color: #f8f9fa; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem;">
+                                    "I'd be happy to review your bill with you. Looking at your statement for [Month], I can see your charges include [explain charges]. The increase/change you're noticing is due to [reason]. Would you like me to break down each part of the bill in more detail, or is there a specific section you have questions about?"
+                                </div>
+                                
+                                <h4>Payment Arrangement</h4>
+                                <div class="script-text" style="background-color: #f8f9fa; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem;">
+                                    "I understand managing bills can be challenging sometimes. Let's see what payment arrangement options are available for you. Your current balance is [Amount]. Based on our guidelines, we can offer you a payment plan that would split this into [number] payments of [amount] each, due on [dates]. Would this work for your situation, or do we need to explore other options?"
+                                </div>
+                                
+                                <h4>Handling a Complaint</h4>
+                                <div class="script-text" style="background-color: #f8f9fa; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem;">
+                                    "I sincerely apologize for the inconvenience/frustration this has caused. Thank you for bringing this to our attention. I'd like to resolve this for you right away. [Address specific issue]. What I can do is [proposed solution]. Would that resolution work for you, or is there something else you had in mind that would better address your concern?"
+                                </div>
+                                
+                                <h4>Call Closing</h4>
+                                <div class="script-text" style="background-color: #f8f9fa; padding: 1rem; border-radius: 0.25rem;">
+                                    "Is there anything else I can assist you with today? [Handle any additional questions] Thank you for choosing SCANA Energy. You'll receive a confirmation [email/letter] summarizing what we discussed. If you have any other questions, please don't hesitate to call us back. Have a wonderful day!"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings Page -->
+            <div class="page" id="settings">
+                <h2 class="page-title">Settings</h2>
+                
+                <div class="card">
+                    <div class="card-header">User Preferences</div>
+                    <div class="card-body">
+                        <form id="preferences-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="display-name">Display Name</label>
+                                    <input type="text" class="form-control" id="display-name" value="Agent Name">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="form-label" for="email">Email</label>
+                                    <input type="email" class="form-control" id="email" value="agent@scanaenergy.com">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Default Call Categories</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="default-categories" value="Rate Renewal" checked="">
+                                        Rate Renewal
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="default-categories" value="Reconnect Service" checked="">
+                                        Reconnect Service
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="default-categories" value="Billing Question" checked="">
+                                        Billing Question
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="default-categories" value="Payment Arrangement" checked="">
+                                        Payment Arrangement
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="default-categories" value="New Service" checked="">
+                                        New Service
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Notification Preferences</label>
+                                <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="notifications" value="follow-up" checked="">
+                                        Follow-up Reminders
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="notifications" value="rate-changes" checked="">
+                                        Rate Changes
+                                    </label>
+                                    <label class="custom-checkbox">
+                                        <input type="checkbox" name="notifications" value="policy-updates">
+                                        Policy Updates
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Save Preferences</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Data Management</div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Export Data</label>
+                            <p>Download your call logs and category data for backup or reporting.</p>
+                            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                                <button class="btn btn-secondary" id="export-calls">Export Call Logs</button>
+                                <button class="btn btn-secondary" id="export-categories">Export Categories</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label class="form-label">Data Retention</label>
+                            <p>Choose how long to keep your call history.</p>
+                            <select class="form-control" id="data-retention" style="max-width: 300px;">
+                                <option value="30">30 days</option>
+                                <option value="60">60 days</option>
+                                <option value="90" selected="">90 days</option>
+                                <option value="180">180 days</option>
+                                <option value="365">1 year</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label class="form-label">Clear Data</label>
+                            <p>Warning: This will permanently delete your saved call data.</p>
+                            <button class="btn btn-danger" id="clear-data">Clear All Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Call Details Modal -->
+    <div class="modal" id="call-details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Call Details</h3>
+                <button class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Call details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="close-modal">Close</button>
+                <button class="btn btn-primary" id="edit-call">Edit</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rate Calculator Modal -->
+    <div class="modal" id="rate-calculator-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">SCANA Energy Rate Calculator</h3>
+                <button class="modal-close">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="avg-usage">Average Monthly Usage (therms)</label>
+                    <input type="number" class="form-control" id="avg-usage" placeholder="Enter average therms per month">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Season Weight</label>
+                    <select class="form-control" id="season-weight">
+                        <option value="balanced">Balanced Year-Round Usage</option>
+                        <option value="winter-heavy" selected="">Heavy Winter Usage</option>
+                        <option value="summer-light">Light Summer Usage</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button class="btn btn-primary" id="calculate-rates">Calculate</button>
+                </div>
+                
+                <div id="rate-results" style="margin-top: 1.5rem; display: none;">
+                    <h4>Recommended Plans</h4>
+                    <div id="rate-recommendations"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Sample data for demonstration
+        let appData = {
+            calls: [],
+            categories: [
+                { id: 1, name: 'Rate Renewal', group: 'Billing', count: 0 },
+                { id: 2, name: 'Reconnect Service', group: 'Account Management', count: 0 },
+                { id: 3, name: 'Disconnect Service', group: 'Account Management', count: 0 },
+                { id: 4, name: 'Billing Question', group: 'Billing', count: 0 },
+                { id: 5, name: 'Payment Arrangement', group: 'Billing', count: 0 },
+                { id: 6, name: 'New Service', group: 'Account Management', count: 0 }
+            ],
+            customTags: [],
+            preferences: {
+                displayName: 'Agent Name',
+                email: 'agent@scanaenergy.com',
+                defaultCategories: ['Rate Renewal', 'Reconnect Service', 'Billing Question', 'Payment Arrangement', 'New Service'],
+                notifications: ['follow-up', 'rate-changes'],
+                dataRetention: 90
+            }
+        };
+        
+        // Generate sample calls
+        function generateSampleCalls() {
+            const categories = [
+                'Rate Renewal', 'Reconnect Service', 'Disconnect Service', 
+                'Billing Question', 'Payment Arrangement', 'New Service',
+                'Service Transfer', 'Gas Leak', 'Pilot Light', 'Complaint'
+            ];
+            
+            const customerNames = [
+                'John Smith', 'Maria Garcia', 'Robert Johnson', 'Lisa Chen', 
+                'Michael Brown', 'Sarah Miller', 'David Wilson', 'Emma Davis'
+            ];
+            
+            const accountNumbers = [
+                '1001234567', '1001987654', '1002345678', '1003456789', 
+                '1004567890', '1005678901', '1006789012', '1007890123'
+            ];
+            
+            const contactNumbers = [
+                '(404) 555-1234', '(678) 555-2345', '(770) 555-3456', '(470) 555-4567',
+                '(404) 555-5678', '(678) 555-6789', '(770) 555-7890', '(470) 555-8901'
+            ];
+            
+            const resolutions = [
+                'Provided information on current rates and processed renewal.',
+                'Scheduled reconnection for next business day and collected payment.',
+                'Explained bill details and resolved customer confusion.',
+                'Set up payment arrangement for 3 installments.',
+                'Processed new service application and scheduled activation.',
+                'Escalated to supervisor for further assistance.',
+                'Provided information on online account setup.',
+                'Scheduled technician visit for pilot light issue.'
+            ];
+            
+            const urls = [
+                'https://billing.scanaenergy.com/account/12345',
+                'https://support.scanaenergy.com/ticket/67890',
+                'https://rates.scanaenergy.com/plans/fixed12',
+                'https://billing.scanaenergy.com/payment/54321',
+                'https://service.scanaenergy.com/request/98765'
+            ];
+            
+            // Generate 20 sample calls
+            for (let i = 1; i <= 20; i++) {
+                const dateOffset = Math.floor(Math.random() * 14); // Random date within last 14 days
+                const callDate = new Date();
+                callDate.setDate(callDate.getDate() - dateOffset);
+                callDate.setHours(
+                    9 + Math.floor(Math.random() * 8),
+                    Math.floor(Math.random() * 60),
+                    0
+                );
+                
+                const categoryIndex = Math.floor(Math.random() * categories.length);
+                const category = categories[categoryIndex];
+                
+                // Increment category count
+                const existingCategory = appData.categories.find(c => c.name === category);
+                if (existingCategory) {
+                    existingCategory.count++;
+                }
+                
+                const nameIndex = Math.floor(Math.random() * customerNames.length);
+                
+                // Generate tags
+                const possibleTags = ['Escalated', 'Needs Follow-up', 'Senior Customer', 'First-time Caller', 'Low Income', 'Online Account'];
+                const tagCount = Math.floor(Math.random() * 3); // 0-2 tags
+                const tags = [];
+                
+                for (let t = 0; t < tagCount; t++) {
+                    const tag = possibleTags[Math.floor(Math.random() * possibleTags.length)];
+                    if (!tags.includes(tag)) {
+                        tags.push(tag);
+                    }
+                }
+                
+                // Determine if we should save for review (20% chance)
+                const saveForReview = Math.random() < 0.2;
+                
+                // Determine follow-up date (30% chance)
+                let followUpDate = null;
+                if (Math.random() < 0.3) {
+                    const followUp = new Date();
+                    followUp.setDate(followUp.getDate() + Math.floor(Math.random() * 7) + 1);
+                    followUpDate = followUp.toISOString().split('T')[0];
+                }
+                
+                // Assign reference URL (40% chance)
+                const hasReference = Math.random() < 0.4;
+                const referenceUrl = hasReference ? urls[Math.floor(Math.random() * urls.length)] : '';
+                
+                // Create call object
+                appData.calls.push({
+                    id: i,
+                    date: callDate.toISOString(),
+                    customerName: customerNames[nameIndex],
+                    accountNumber: accountNumbers[nameIndex],
+                    contactNumber: contactNumbers[nameIndex],
+                    category: category,
+                    tags: tags,
+                    description: `Customer called regarding ${category.toLowerCase()}.`,
+                    resolution: resolutions[Math.floor(Math.random() * resolutions.length)],
+                    priority: Math.random() < 0.2 ? 'high' : (Math.random() < 0.5 ? 'medium' : 'low'),
+                    saveForReview: saveForReview,
+                    followUpDate: followUpDate,
+                    referenceUrl: referenceUrl
+                });
+            }
+        }
+        
+        // Load data from localStorage or generate sample data
+        function loadData() {
+            const savedData = localStorage.getItem('agentCallTracker');
+            if (savedData) {
+                appData = JSON.parse(savedData);
+            } else {
+                generateSampleCalls();
+                saveData();
+            }
+        }
+        
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('agentCallTracker', JSON.stringify(appData));
+        }
+        
+        // Initialize the application
+        function initApp() {
+            loadData();
+            setupNavigation();
+            renderDashboard();
+            setupEventListeners();
+            
+            // Set default date and time for call logging
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('call-date').value = now.toISOString().slice(0, 16);
+        }
+        
+        // Setup navigation
+        function setupNavigation() {
+            const menuLinks = document.querySelectorAll('.sidebar-menu-link');
+            const pages = document.querySelectorAll('.page');
+            
+            menuLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links and pages
+                    menuLinks.forEach(l => l.classList.remove('active'));
+                    pages.forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    link.classList.add('active');
+                    
+                    // Show corresponding page
+                    const pageId = link.getAttribute('data-page');
+                    document.getElementById(pageId).classList.add('active');
+                });
+            });
+            
+            // Setup tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabContainer = tab.closest('.tab-container');
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    // Remove active class from all tabs and content in this container
+                    tabContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    tabContainer.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding content
+                    tab.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        }
+        
+        // Render dashboard data
+        function renderDashboard() {
+            // Get today's date
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Count today's calls
+            const todayCalls = appData.calls.filter(call => {
+                const callDate = new Date(call.date);
+                return callDate.toDateString() === today.toDateString();
+            });
+            
+            document.getElementById('total-calls-today').textContent = todayCalls.length;
+            
+            // Count calls by category
+            const reconnectCalls = appData.calls.filter(call => 
+                call.category === 'Reconnect Service' || call.category === 'Disconnect Service'
+            );
+            
+            const rateRenewalCalls = appData.calls.filter(call => 
+                call.category === 'Rate Renewal'
+            );
+            
+            const savedCalls = appData.calls.filter(call => 
+                call.saveForReview === true
+            );
+            
+            document.getElementById('reconnect-calls').textContent = reconnectCalls.length;
+            document.getElementById('rate-renewal-calls').textContent = rateRenewalCalls.length;
+            document.getElementById('saved-calls-count').textContent = savedCalls.length;
+            
+            // Render recent calls
+            renderRecentCalls();
+            
+            // Render follow-up reminders
+            renderReminders();
+            
+            // Render category chart
+            renderCategoryChart();
+        }
+        
+        // Render recent calls table
+        function renderRecentCalls() {
+            const recentCallsTable = document.getElementById('recent-calls');
+            recentCallsTable.innerHTML = '';
+            
+            // Sort calls by date (newest first) and take top 5
+            const recentCalls = [...appData.calls]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+            
+            recentCalls.forEach(call => {
+                const row = document.createElement('tr');
+                
+                const timeCell = document.createElement('td');
+                const callDate = new Date(call.date);
+                timeCell.textContent = callDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                row.appendChild(timeCell);
+                
+                const customerCell = document.createElement('td');
+                customerCell.textContent = call.customerName;
+                row.appendChild(customerCell);
+                
+                const categoryCell = document.createElement('td');
+                categoryCell.textContent = call.category;
+                row.appendChild(categoryCell);
+                
+                const statusCell = document.createElement('td');
+                if (call.followUpDate) {
+                    const badge = document.createElement('span');
+                    badge.classList.add('badge', 'badge-warning');
+                    badge.textContent = 'Follow-up';
+                    statusCell.appendChild(badge);
+                } else if (call.saveForReview) {
+                    const badge = document.createElement('span');
+                    badge.classList.add('badge', 'badge-info');
+                    badge.textContent = 'For Review';
+                    statusCell.appendChild(badge);
+                } else {
+                    statusCell.textContent = 'Completed';
+                }
+                row.appendChild(statusCell);
+                
+                const actionsCell = document.createElement('td');
+                const viewBtn = document.createElement('button');
+                viewBtn.classList.add('btn', 'btn-sm', 'btn-primary');
+                viewBtn.textContent = 'View';
+                viewBtn.addEventListener('click', () => {
+                    showCallDetails(call);
+                });
+                actionsCell.appendChild(viewBtn);
+                row.appendChild(actionsCell);
+                
+                recentCallsTable.appendChild(row);
+            });
+        }
+        
+        // Render follow-up reminders
+        function renderReminders() {
+            const remindersContainer = document.getElementById('reminders-container');
+            remindersContainer.innerHTML = '';
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            // Get calls with follow-up dates
+            const followUpCalls = appData.calls.filter(call => call.followUpDate);
+            
+            // Sort by follow-up date (closest first)
+            followUpCalls.sort((a, b) => new Date(a.followUpDate) - new Date(b.followUpDate));
+            
+            if (followUpCalls.length === 0) {
+                remindersContainer.innerHTML = '<p>No follow-up reminders.</p>';
+                return;
+            }
+            
+            // Take the next 3 follow-ups
+            const upcomingFollowUps = followUpCalls.slice(0, 3);
+            
+            upcomingFollowUps.forEach(call => {
+                const followUpDate = new Date(call.followUpDate);
+                
+                const reminderCard = document.createElement('div');
+                reminderCard.classList.add('call-card');
+                
+                // Add priority color
+                reminderCard.classList.add(`priority-${call.priority}`);
+                
+                const reminderHeader = document.createElement('div');
+                reminderHeader.classList.add('call-card-header');
+                
+                const titleDiv = document.createElement('div');
+                const title = document.createElement('div');
+                title.classList.add('call-card-title');
+                title.textContent = `Follow-up: ${call.customerName}`;
+                titleDiv.appendChild(title);
+                
+                const customer = document.createElement('div');
+                customer.classList.add('call-card-customer');
+                customer.textContent = `Account: ${call.accountNumber || 'N/A'}`;
+                titleDiv.appendChild(customer);
+                
+                reminderHeader.appendChild(titleDiv);
+                
+                const dateDiv = document.createElement('div');
+                dateDiv.style.fontWeight = 'bold';
+                
+                // Format date as "Jul 24" or "Today" or "Tomorrow"
+                let dateText;
+                if (followUpDate.toDateString() === today.toDateString()) {
+                    dateText = 'Today';
+                    dateDiv.style.color = '#dc3545';
+                } else if (followUpDate.toDateString() === new Date(today.getTime() + 86400000).toDateString()) {
+                    dateText = 'Tomorrow';
+                    dateDiv.style.color = '#ffc107';
+                } else {
+                    dateText = followUpDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }
+                
+                dateDiv.textContent = dateText;
+                reminderHeader.appendChild(dateDiv);
+                
+                reminderCard.appendChild(reminderHeader);
+                
+                const category = document.createElement('div');
+                category.classList.add('call-card-tags');
+                
+                const categoryTag = document.createElement('span');
+                categoryTag.classList.add('tag', 'tag-primary');
+                categoryTag.textContent = call.category;
+                category.appendChild(categoryTag);
+                
+                call.tags.forEach(tag => {
+                    const tagSpan = document.createElement('span');
+                    tagSpan.classList.add('tag', 'tag-secondary');
+                    tagSpan.textContent = tag;
+                    category.appendChild(tagSpan);
+                });
+                
+                reminderCard.appendChild(category);
+                
+                if (call.description) {
+                    const notes = document.createElement('div');
+                    notes.classList.add('call-notes');
+                    notes.textContent = call.description;
+                    reminderCard.appendChild(notes);
+                }
+                
+                const footer = document.createElement('div');
+                footer.classList.add('call-card-footer');
+                
+                const actions = document.createElement('div');
+                
+                const completeBtn = document.createElement('button');
+                completeBtn.classList.add('btn', 'btn-sm', 'btn-success');
+                completeBtn.textContent = 'Complete';
+                completeBtn.addEventListener('click', () => {
+                    // Mark follow-up as complete
+                    const callIndex = appData.calls.findIndex(c => c.id === call.id);
+                    if (callIndex !== -1) {
+                        appData.calls[callIndex].followUpDate = null;
+                        saveData();
+                        renderDashboard();
+                    }
+                });
+                
+                const viewBtn = document.createElement('button');
+                viewBtn.classList.add('btn', 'btn-sm', 'btn-primary');
+                viewBtn.style.marginLeft = '0.5rem';
+                viewBtn.textContent = 'View';
+                viewBtn.addEventListener('click', () => {
+                    showCallDetails(call);
+                });
+                
+                actions.appendChild(completeBtn);
+                actions.appendChild(viewBtn);
+                
+                footer.appendChild(actions);
+                reminderCard.appendChild(footer);
+                
+                remindersContainer.appendChild(reminderCard);
+            });
+        }
+        
+        // Render category chart
+        function renderCategoryChart() {
+            const ctx = document.getElementById('category-chart').getContext('2d');
+            
+            // Count calls by category
+            const categoryCounts = {};
+            
+            appData.calls.forEach(call => {
+                if (!categoryCounts[call.category]) {
+                    categoryCounts[call.category] = 0;
+                }
+                categoryCounts[call.category]++;
+            });
+            
+            // Sort categories by count (descending)
+            const sortedCategories = Object.entries(categoryCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6); // Top 6 categories
+            
+            const labels = sortedCategories.map(([category]) => category);
+            const data = sortedCategories.map(([, count]) => count);
+            
+            // Colors for chart
+            const backgroundColors = [
+                'rgba(0, 82, 155, 0.7)',
+                'rgba(242, 108, 34, 0.7)',
+                'rgba(40, 167, 69, 0.7)',
+                'rgba(255, 193, 7, 0.7)',
+                'rgba(23, 162, 184, 0.7)',
+                'rgba(108, 117, 125, 0.7)'
+            ];
+            
+            // Destroy previous chart if exists
+            if (window.categoryChart) {
+                window.categoryChart.destroy();
+            }
+            
+            // Create new chart
+            window.categoryChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Show call details in modal
+        function showCallDetails(call) {
+            const modal = document.getElementById('call-details-modal');
+            const modalBody = modal.querySelector('.modal-body');
+            
+            // Format date
+            const callDate = new Date(call.date);
+            const formattedDate = callDate.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Create content
+            modalBody.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <div>
+                        <h4>${call.customerName}</h4>
+                        <div style="color: #6c757d;">Account: ${call.accountNumber || 'N/A'}</div>
+                        <div style="color: #6c757d;">Phone: ${call.contactNumber || 'N/A'}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 500;">${formattedDate}</div>
+                        <div>
+                            <span class="badge badge-${
+                                call.priority === 'high' ? 'danger' : 
+                                (call.priority === 'medium' ? 'warning' : 'success')
+                            }">${call.priority.charAt(0).toUpperCase() + call.priority.slice(1)} Priority</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">Category</div>
+                    <div>
+                        <span class="tag tag-primary">${call.category}</span>
+                        ${call.tags.map(tag => `<span class="tag tag-secondary">${tag}</span>`).join('')}
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">Description</div>
+                    <div style="background-color: #f8f9fa; padding: 0.75rem; border-radius: 0.25rem;">${call.description || 'No description provided.'}</div>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">Resolution</div>
+                    <div style="background-color: #f8f9fa; padding: 0.75rem; border-radius: 0.25rem;">${call.resolution || 'No resolution provided.'}</div>
+                </div>
+                
+                ${call.followUpDate ? `
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">Follow-up Date</div>
+                    <div style="color: ${new Date(call.followUpDate) <= new Date() ? '#dc3545' : '#212529'}; font-weight: 500;">${new Date(call.followUpDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                </div>
+                ` : ''}
+                
+                ${call.referenceUrl ? `
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">Reference</div>
+                    <a href="${call.referenceUrl}" target="_blank" class="reference-link">${call.referenceUrl}</a>
+                </div>
+                ` : ''}
+                
+                <div style="margin-top: 1.5rem;">
+                    <button class="btn btn-sm ${call.saveForReview ? 'btn-warning' : 'btn-secondary'}" id="toggle-review">
+                        ${call.saveForReview ? 'Remove from Review' : 'Save for Review'}
+                    </button>
+                    
+                    <button class="btn btn-sm ${call.followUpDate ? 'btn-warning' : 'btn-secondary'}" id="toggle-followup" style="margin-left: 0.5rem;">
+                        ${call.followUpDate ? 'Clear Follow-up' : 'Set Follow-up'}
+                    </button>
+                </div>
+            `;
+            
+            // Show modal
+            modal.style.display = 'block';
+            
+            // Set up event listeners for modal buttons
+            document.querySelector('.modal-close').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            document.getElementById('close-modal').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            document.getElementById('edit-call').addEventListener('click', () => {
+                // Navigate to log call page and populate form with call data
+                // This is a simplified implementation
+                modal.style.display = 'none';
+                
+                // Switch to log call page
+                document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                const logCallLink = document.querySelector('[data-page="log-call"]');
+                logCallLink.classList.add('active');
+                document.getElementById('log-call').classList.add('active');
+                
+                // Populate form
+                document.getElementById('customer-name').value = call.customerName;
+                document.getElementById('account-number').value = call.accountNumber || '';
+                document.getElementById('contact-number').value = call.contactNumber || '';
+                
+                const callDateTime = new Date(call.date);
+                callDateTime.setMinutes(callDateTime.getMinutes() - callDateTime.getTimezoneOffset());
+                document.getElementById('call-date').value = callDateTime.toISOString().slice(0, 16);
+                
+                document.getElementById('call-category').value = call.category;
+                document.getElementById('call-description').value = call.description || '';
+                document.getElementById('resolution').value = call.resolution || '';
+                document.getElementById('reference-url').value = call.referenceUrl || '';
+                document.getElementById('call-priority').value = call.priority;
+                document.getElementById('follow-up-date').value = call.followUpDate || '';
+                document.getElementById('save-for-review').checked = call.saveForReview;
+                
+                // Check tags
+                const tagCheckboxes = document.querySelectorAll('input[name="call-tags"]');
+                tagCheckboxes.forEach(checkbox => {
+                    checkbox.checked = call.tags.includes(checkbox.value);
+                });
+            });
+            
+            // Toggle save for review
+            document.getElementById('toggle-review').addEventListener('click', () => {
+                const callIndex = appData.calls.findIndex(c => c.id === call.id);
+                if (callIndex !== -1) {
+                    appData.calls[callIndex].saveForReview = !appData.calls[callIndex].saveForReview;
+                    saveData();
+                    showCallDetails(appData.calls[callIndex]); // Refresh modal
+                    renderDashboard();
+                }
+            });
+            
+            // Toggle follow-up
+            document.getElementById('toggle-followup').addEventListener('click', () => {
+                const callIndex = appData.calls.findIndex(c => c.id === call.id);
+                if (callIndex !== -1) {
+                    if (appData.calls[callIndex].followUpDate) {
+                        // Clear follow-up
+                        appData.calls[callIndex].followUpDate = null;
+                    } else {
+                        // Set follow-up to tomorrow
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        appData.calls[callIndex].followUpDate = tomorrow.toISOString().split('T')[0];
+                    }
+                    saveData();
+                    showCallDetails(appData.calls[callIndex]); // Refresh modal
+                    renderDashboard();
+                }
+            });
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Call log form submission
+            const callLogForm = document.getElementById('call-log-form');
+            callLogForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Get form data
+                const customerName = document.getElementById('customer-name').value;
+                const accountNumber = document.getElementById('account-number').value;
+                const contactNumber = document.getElementById('contact-number').value;
+                const callDate = document.getElementById('call-date').value;
+                const category = document.getElementById('call-category').value;
+                const description = document.getElementById('call-description').value;
+                const resolution = document.getElementById('resolution').value;
+                const referenceUrl = document.getElementById('reference-url').value;
+                const priority = document.getElementById('call-priority').value;
+                const followUpDate = document.getElementById('follow-up-date').value;
+                const saveForReview = document.getElementById('save-for-review').checked;
+                
+                // Get selected tags
+                const selectedTags = [];
+                document.querySelectorAll('input[name="call-tags"]:checked').forEach(checkbox => {
+                    selectedTags.push(checkbox.value);
+                });
+                
+                // Create new call object
+                const newCall = {
+                    id: appData.calls.length > 0 ? Math.max(...appData.calls.map(call => call.id)) + 1 : 1,
+                    date: new Date(callDate).toISOString(),
+                    customerName,
+                    accountNumber,
+                    contactNumber,
+                    category,
+                    tags: selectedTags,
+                    description,
+                    resolution,
+                    referenceUrl,
+                    priority,
+                    followUpDate,
+                    saveForReview
+                };
+                
+                // Add to calls array
+                appData.calls.push(newCall);
+                
+                // Increment category count
+                const existingCategory = appData.categories.find(c => c.name === category);
+                if (existingCategory) {
+                    existingCategory.count++;
+                } else {
+                    // Create new category if it doesn't exist
+                    appData.categories.push({
+                        id: appData.categories.length > 0 ? Math.max(...appData.categories.map(c => c.id)) + 1 : 1,
+                        name: category,
+                        group: 'Other',
+                        count: 1
+                    });
+                }
+                
+                // Save data
+                saveData();
+                
+                // Reset form
+                callLogForm.reset();
+                
+                // Set default date and time
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('call-date').value = now.toISOString().slice(0, 16);
+                
+                // Show success message
+                alert('Call logged successfully!');
+                
+                // Update dashboard
+                renderDashboard();
+                
+                // Render saved calls if we're saving for review
+                if (saveForReview) {
+                    renderSavedCalls();
+                }
+            });
+            
+            // Add category form submission
+            const addCategoryForm = document.getElementById('add-category-form');
+            addCategoryForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const categoryName = document.getElementById('new-category').value;
+                const categoryGroup = document.getElementById('category-group').value;
+                
+                // Check if category already exists
+                if (appData.categories.some(c => c.name === categoryName)) {
+                    alert('This category already exists.');
+                    return;
+                }
+                
+                // Add new category
+                appData.categories.push({
+                    id: appData.categories.length > 0 ? Math.max(...appData.categories.map(c => c.id)) + 1 : 1,
+                    name: categoryName,
+                    group: categoryGroup,
+                    count: 0
+                });
+                
+                // Save data
+                saveData();
+                
+                // Reset form
+                addCategoryForm.reset();
+                
+                // Show success message
+                alert('Category added successfully!');
+                
+                // Render categories
+                renderCategories();
+            });
+            
+            // User preferences form submission
+            const preferencesForm = document.getElementById('preferences-form');
+            preferencesForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Get form data
+                const displayName = document.getElementById('display-name').value;
+                const email = document.getElementById('email').value;
+                
+                // Get selected default categories
+                const defaultCategories = [];
+                document.querySelectorAll('input[name="default-categories"]:checked').forEach(checkbox => {
+                    defaultCategories.push(checkbox.value);
+                });
+                
+                // Get notification preferences
+                const notifications = [];
+                document.querySelectorAll('input[name="notifications"]:checked').forEach(checkbox => {
+                    notifications.push(checkbox.value);
+                });
+                
+                // Update preferences
+                appData.preferences.displayName = displayName;
+                appData.preferences.email = email;
+                appData.preferences.defaultCategories = defaultCategories;
+                appData.preferences.notifications = notifications;
+                
+                // Save data
+                saveData();
+                
+                // Update display name in header
+                document.querySelector('.user-name').textContent = displayName;
+                
+                // Show success message
+                alert('Preferences saved successfully!');
+            });
+            
+            // Rate calculator button
+            document.getElementById('rate-calculator-btn').addEventListener('click', () => {
+                document.getElementById('rate-calculator-modal').style.display = 'block';
+            });
+            
+            // Calculate rates button
+            document.getElementById('calculate-rates').addEventListener('click', () => {
+                const avgUsage = parseInt(document.getElementById('avg-usage').value) || 0;
+                const seasonWeight = document.getElementById('season-weight').value;
+                
+                if (avgUsage <= 0) {
+                    alert('Please enter a valid average usage.');
+                    return;
+                }
+                
+                // Show results
+                const resultsDiv = document.getElementById('rate-results');
+                resultsDiv.style.display = 'block';
+                
+                const recommendationsDiv = document.getElementById('rate-recommendations');
+                recommendationsDiv.innerHTML = '';
+                
+                // Calculate estimated monthly costs for each plan
+                const plans = [
+                    { name: 'Fixed Rate Basic (12 months)', rate: 0.599, customerCharge: 9.95, recommendedFor: 'Price stability, medium to high usage' },
+                    { name: 'Fixed Rate Flex (6 months)', rate: 0.649, customerCharge: 9.95, recommendedFor: 'Short-term residents, flexibility' },
+                    { name: 'Variable Rate', rate: 0.729, customerCharge: 7.95, recommendedFor: 'Low summer usage, market rate shoppers' },
+                    { name: 'Senior Advantage', rate: 0.579, customerCharge: 9.95, recommendedFor: 'Customers 65+, stable budget' }
+                ];
+                
+                // Apply seasonal weighting
+                let winterMultiplier = 1.0;
+                let summerMultiplier = 1.0;
+                
+                if (seasonWeight === 'winter-heavy') {
+                    winterMultiplier = 1.5;
+                    summerMultiplier = 0.5;
+                } else if (seasonWeight === 'summer-light') {
+                    winterMultiplier = 1.2;
+                    summerMultiplier = 0.3;
+                }
+                
+                // Calculate estimated annual cost
+                plans.forEach(plan => {
+                    // Winter months (Nov-Mar): 5 months
+                    const winterMonthlyUsage = avgUsage * winterMultiplier;
+                    const winterMonthlyCost = (winterMonthlyUsage * plan.rate) + plan.customerCharge;
+                    const winterTotalCost = winterMonthlyCost * 5;
+                    
+                    // Summer months (Apr-Oct): 7 months
+                    const summerMonthlyUsage = avgUsage * summerMultiplier;
+                    const summerMonthlyCost = (summerMonthlyUsage * plan.rate) + plan.customerCharge;
+                    const summerTotalCost = summerMonthlyCost * 7;
+                    
+                    // Annual cost
+                    const annualCost = winterTotalCost + summerTotalCost;
+                    const avgMonthlyCost = annualCost / 12;
+                    
+                    // Create recommendation card
+                    const card = document.createElement('div');
+                    card.style.marginBottom = '1rem';
+                    card.style.padding = '1rem';
+                    card.style.borderRadius = '0.25rem';
+                    card.style.border = '1px solid #ddd';
+                    
+                    card.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <div style="font-weight: 600;">${plan.name}</div>
+                            <div style="font-weight: 700; color: var(--primary);">$${avgMonthlyCost.toFixed(2)}/mo avg</div>
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <span style="font-weight: 500;">Rate:</span> $${plan.rate.toFixed(3)}/therm + $${plan.customerCharge.toFixed(2)} monthly charge
+                        </div>
+                        <div>
+                            <span style="font-weight: 500;">Best for:</span> ${plan.recommendedFor}
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.875rem; color: #6c757d;">
+                            <div>Winter estimate (Nov-Mar): $${winterMonthlyCost.toFixed(2)}/mo</div>
+                            <div>Summer estimate (Apr-Oct): $${summerMonthlyCost.toFixed(2)}/mo</div>
+                        </div>
+                    `;
+                    
+                    recommendationsDiv.appendChild(card);
+                });
+            });
+            
+            // Close rate calculator modal
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                });
+            });
+            
+            // Export calls button
+            document.getElementById('export-calls').addEventListener('click', () => {
+                exportData('calls');
+            });
+            
+            // Export categories button
+            document.getElementById('export-categories').addEventListener('click', () => {
+                exportData('categories');
+            });
+            
+            // Clear data button
+            document.getElementById('clear-data').addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear all your call data? This cannot be undone.')) {
+                    localStorage.removeItem('agentCallTracker');
+                    location.reload();
+                }
+            });
+            
+            // Change category chart period
+            document.getElementById('category-chart-period').addEventListener('change', () => {
+                renderCategoryChart();
+            });
+            
+            // Saved calls navigation
+            document.querySelector('[data-page="saved-calls"]').addEventListener('click', () => {
+                renderSavedCalls();
+            });
+            
+            // Call categories navigation
+            document.querySelector('[data-page="call-categories"]').addEventListener('click', () => {
+                renderCategories();
+            });
+        }
+        
+        // Render saved calls
+        function renderSavedCalls() {
+            // Sort calls by date (newest first)
+            const sortedCalls = [...appData.calls].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Filter calls based on current tab
+            const allSavedDiv = document.getElementById('all-saved-calls');
+            const reviewCallsDiv = document.getElementById('review-calls');
+            const followUpCallsDiv = document.getElementById('follow-up-calls');
+            
+            allSavedDiv.innerHTML = '';
+            reviewCallsDiv.innerHTML = '';
+            followUpCallsDiv.innerHTML = '';
+            
+            // Get calls for each category
+            const allSaved = sortedCalls.filter(call => call.saveForReview || call.followUpDate);
+            const forReview = sortedCalls.filter(call => call.saveForReview);
+            const needFollowUp = sortedCalls.filter(call => call.followUpDate);
+            
+            // Render calls for each tab
+            if (allSaved.length === 0) {
+                allSavedDiv.innerHTML = '<p>No saved calls found.</p>';
+            } else {
+                allSaved.forEach(call => {
+                    const callCard = createCallCard(call);
+                    allSavedDiv.appendChild(callCard);
+                });
+            }
+            
+            if (forReview.length === 0) {
+                reviewCallsDiv.innerHTML = '<p>No calls saved for review.</p>';
+            } else {
+                forReview.forEach(call => {
+                    const callCard = createCallCard(call);
+                    reviewCallsDiv.appendChild(callCard);
+                });
+            }
+            
+            if (needFollowUp.length === 0) {
+                followUpCallsDiv.innerHTML = '<p>No calls need follow-up.</p>';
+            } else {
+                needFollowUp.forEach(call => {
+                    const callCard = createCallCard(call);
+                    followUpCallsDiv.appendChild(callCard);
+                });
+            }
+        }
+        
+        // Create call card element
+        function createCallCard(call) {
+            const callCard = document.createElement('div');
+            callCard.classList.add('call-card');
+            
+            // Add priority color
+            callCard.classList.add(`priority-${call.priority}`);
+            
+            const callHeader = document.createElement('div');
+            callHeader.classList.add('call-card-header');
+            
+            const titleDiv = document.createElement('div');
+            const title = document.createElement('div');
+            title.classList.add('call-card-title');
+            title.textContent = call.customerName;
+            titleDiv.appendChild(title);
+            
+            const customer = document.createElement('div');
+            customer.classList.add('call-card-customer');
+            customer.textContent = `Account: ${call.accountNumber || 'N/A'} | Phone: ${call.contactNumber || 'N/A'}`;
+            titleDiv.appendChild(customer);
+            
+            callHeader.appendChild(titleDiv);
+            
+            const dateDiv = document.createElement('div');
+            dateDiv.classList.add('call-card-date');
+            const callDate = new Date(call.date);
+            dateDiv.textContent = callDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+            callHeader.appendChild(dateDiv);
+            
+            callCard.appendChild(callHeader);
+            
+            const category = document.createElement('div');
+            category.classList.add('call-card-tags');
+            
+            const categoryTag = document.createElement('span');
+            categoryTag.classList.add('tag', 'tag-primary');
+            categoryTag.textContent = call.category;
+            category.appendChild(categoryTag);
+            
+            // Add special tags
+            if (call.saveForReview) {
+                const reviewTag = document.createElement('span');
+                reviewTag.classList.add('tag', 'tag-info');
+                reviewTag.textContent = 'For Review';
+                category.appendChild(reviewTag);
+            }
+            
+            if (call.followUpDate) {
+                const followUpTag = document.createElement('span');
+                followUpTag.classList.add('tag', 'tag-warning');
+                
+                const followUpDate = new Date(call.followUpDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                // Format date based on how soon it is
+                let dateText;
+                if (followUpDate < today) {
+                    dateText = 'Overdue';
+                    followUpTag.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                    followUpTag.style.color = '#dc3545';
+                } else if (followUpDate.toDateString() === today.toDateString()) {
+                    dateText = 'Today';
+                } else if (followUpDate.toDateString() === new Date(today.getTime() + 86400000).toDateString()) {
+                    dateText = 'Tomorrow';
+                } else {
+                    dateText = followUpDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }
+                
+                followUpTag.textContent = `Follow-up: ${dateText}`;
+                category.appendChild(followUpTag);
+            }
+            
+            call.tags.forEach(tag => {
+                const tagSpan = document.createElement('span');
+                tagSpan.classList.add('tag', 'tag-secondary');
+                tagSpan.textContent = tag;
+                category.appendChild(tagSpan);
+            });
+            
+            callCard.appendChild(category);
+            
+            if (call.description) {
+                const notes = document.createElement('div');
+                notes.classList.add('call-notes');
+                notes.textContent = call.description.length > 150 ? 
+                    call.description.substring(0, 150) + '...' : 
+                    call.description;
+                callCard.appendChild(notes);
+            }
+            
+            if (call.referenceUrl) {
+                const reference = document.createElement('a');
+                reference.classList.add('reference-link');
+                reference.href = call.referenceUrl;
+                reference.target = '_blank';
+                reference.textContent = 'View Reference';
+                callCard.appendChild(reference);
+            }
+            
+            const footer = document.createElement('div');
+            footer.classList.add('call-card-footer');
+            
+            const actions = document.createElement('div');
+            
+            const viewBtn = document.createElement('button');
+            viewBtn.classList.add('btn', 'btn-sm', 'btn-primary');
+            viewBtn.textContent = 'View Details';
+            viewBtn.addEventListener('click', () => {
+                showCallDetails(call);
+            });
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.classList.add('btn', 'btn-sm', 'btn-danger');
+            removeBtn.style.marginLeft = '0.5rem';
+            removeBtn.textContent = 'Remove';
+            removeBtn.addEventListener('click', () => {
+                // Remove from saved calls
+                const callIndex = appData.calls.findIndex(c => c.id === call.id);
+                if (callIndex !== -1) {
+                    appData.calls[callIndex].saveForReview = false;
+                    appData.calls[callIndex].followUpDate = null;
+                    saveData();
+                    renderSavedCalls();
+                    renderDashboard();
+                }
+            });
+            
+            actions.appendChild(viewBtn);
+            actions.appendChild(removeBtn);
+            
+            footer.appendChild(actions);
+            callCard.appendChild(footer);
+            
+            return callCard;
+        }
+        
+        // Render categories data
+        function renderCategories() {
+            // Render category stats
+            const reconnectTotal = appData.calls.filter(call => 
+                call.category === 'Reconnect Service' || call.category === 'Disconnect Service'
+            ).length;
+            
+            const rateRenewalTotal = appData.calls.filter(call => 
+                call.category === 'Rate Renewal'
+            ).length;
+            
+            const billingTotal = appData.calls.filter(call => 
+                call.category === 'Billing Question' || call.category === 'Payment Arrangement'
+            ).length;
+            
+            const newServiceTotal = appData.calls.filter(call => 
+                call.category === 'New Service'
+            ).length;
+            
+            document.getElementById('reconnect-total').textContent = reconnectTotal;
+            document.getElementById('rate-renewal-total').textContent = rateRenewalTotal;
+            document.getElementById('billing-total').textContent = billingTotal;
+            document.getElementById('new-service-total').textContent = newServiceTotal;
+            
+            // Render categories table
+            const categoriesTable = document.getElementById('categories-table');
+            categoriesTable.innerHTML = '';
+            
+            // Sort categories by count (highest first)
+            const sortedCategories = [...appData.categories].sort((a, b) => b.count - a.count);
+            
+            sortedCategories.forEach(category => {
+                const row = document.createElement('tr');
+                
+                const nameCell = document.createElement('td');
+                nameCell.textContent = category.name;
+                row.appendChild(nameCell);
+                
+                const groupCell = document.createElement('td');
+                groupCell.textContent = category.group;
+                row.appendChild(groupCell);
+                
+                const countCell = document.createElement('td');
+                countCell.textContent = category.count;
+                row.appendChild(countCell);
+                
+                const actionsCell = document.createElement('td');
+                
+                // Only allow deleting custom categories
+                if (!['Rate Renewal', 'Reconnect Service', 'Disconnect Service', 'Billing Question', 'Payment Arrangement', 'New Service'].includes(category.name)) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.classList.add('btn', 'btn-sm', 'btn-danger');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.addEventListener('click', () => {
+                        if (confirm(`Are you sure you want to delete the "${category.name}" category?`)) {
+                            // Remove category
+                            appData.categories = appData.categories.filter(c => c.id !== category.id);
+                            saveData();
+                            renderCategories();
+                        }
+                    });
+                    actionsCell.appendChild(deleteBtn);
+                } else {
+                    actionsCell.textContent = 'Default';
+                }
+                
+                row.appendChild(actionsCell);
+                
+                categoriesTable.appendChild(row);
+            });
+            
+            // Render volume chart
+            renderVolumeChart();
+        }
+        
+        // Render volume chart
+        function renderVolumeChart() {
+            const ctx = document.getElementById('volume-chart').getContext('2d');
+            
+            // Get time range
+            const timeRange = document.getElementById('volume-time-range').value;
+            
+            // Define date range
+            const endDate = new Date();
+            let startDate;
+            
+            if (timeRange === 'today') {
+                startDate = new Date(endDate);
+                startDate.setHours(0, 0, 0, 0);
+            } else if (timeRange === 'week') {
+                startDate = new Date(endDate);
+                startDate.setDate(startDate.getDate() - 7);
+            } else if (timeRange === 'month') {
+                startDate = new Date(endDate);
+                startDate.setMonth(startDate.getMonth() - 1);
+            } else if (timeRange === 'quarter') {
+                startDate = new Date(endDate);
+                startDate.setMonth(startDate.getMonth() - 3);
+            }
+            
+            // Filter calls by date range
+            const filteredCalls = appData.calls.filter(call => {
+                const callDate = new Date(call.date);
+                return callDate >= startDate && callDate <= endDate;
+            });
+            
+            // Count calls by category
+            const categoryCounts = {};
+            
+            filteredCalls.forEach(call => {
+                if (!categoryCounts[call.category]) {
+                    categoryCounts[call.category] = 0;
+                }
+                categoryCounts[call.category]++;
+            });
+            
+            // Sort categories by count (descending)
+            const sortedCategories = Object.entries(categoryCounts)
+                .sort((a, b) => b[1] - a[1]);
+            
+            const labels = sortedCategories.map(([category]) => category);
+            const data = sortedCategories.map(([, count]) => count);
+            
+            // Colors for chart
+            const backgroundColors = [
+                'rgba(0, 82, 155, 0.7)',
+                'rgba(242, 108, 34, 0.7)',
+                'rgba(40, 167, 69, 0.7)',
+                'rgba(255, 193, 7, 0.7)',
+                'rgba(23, 162, 184, 0.7)',
+                'rgba(108, 117, 125, 0.7)',
+                'rgba(111, 66, 193, 0.7)',
+                'rgba(253, 126, 20, 0.7)',
+                'rgba(32, 201, 151, 0.7)',
+                'rgba(220, 53, 69, 0.7)'
+            ];
+            
+            // Destroy previous chart if exists
+            if (window.volumeChart) {
+                window.volumeChart.destroy();
+            }
+            
+            // Create new chart
+            window.volumeChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Call Volume',
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Calls'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Export data function
+        function exportData(type) {
+            let data;
+            let filename;
+            
+            if (type === 'calls') {
+                data = appData.calls;
+                filename = 'scana_energy_calls_export.json';
+            } else if (type === 'categories') {
+                data = appData.categories;
+                filename = 'scana_energy_categories_export.json';
+            }
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+
+
+</body></html>
